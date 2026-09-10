@@ -1,7 +1,7 @@
 from setuptools import setup
 from glob import glob
 
-package_name = 'a3_professor'
+package_name = 'a3_solution'
 
 setup(
     name=package_name,
@@ -11,18 +11,19 @@ setup(
         ('share/ament_index/resource_index/packages', ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
+        ('share/' + package_name + '/config', glob('config/*.yaml')),
     ],
-    install_requires=['setuptools', 'numpy'],
+    install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Professor',
-    maintainer_email='professor@example.com',
-    description='MFE A3 skidpad TF scenario and grader.',
+    maintainer='Neil George',
+    maintainer_email='neilgeorge03@gmail.com',
+    description='MFE A3 student solution: static + dynamic TF chain.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tf_scenario_node = a3_professor.tf_scenario_node:main',
-            'grader = a3_professor.grader:main',
+            'static_tf_node = a3_solution.static_tf_node:main',
+            'dynamic_tf_node = a3_solution.dynamic_tf_node:main',
         ],
     },
 )

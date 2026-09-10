@@ -1,0 +1,11 @@
+# Solution-side parameters. These are the values the student nodes read via
+# declare_parameter. The TF lookup timeout is the main knob if your machine is
+# slow — bump it if you see "Lookup would require extrapolation" warnings.
+#
+# The wildcard node name (/**) applies these params to any node under any
+# namespace, so the same YAML works whether you launch under /neil or under
+# /<github_user>. Launch files pass this file through `parameters=[...]`.
+/**:
+  ros__parameters:
+    tf_lookup_timeout_s: 0.1
+    input_topic: /neil/sensor_cones

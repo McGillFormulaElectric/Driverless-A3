@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  colcon-build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup ROS 2 Humble
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: humble
+
+      - name: Build and test
+        id: action_ros_ci_step
+        uses: ros-tooling/action-ros-ci@v0.3
+        with:
+          target-ros2-distro: humble
+          package-name: a3_neil a3_solution
+          vcs-repo-file-url: ""
+          colcon-defaults: |
+            {
+              "build": { "symlink-install": true }
+            }
+
+      - name: Upload colcon logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: colcon-logs
+          path: ${{ steps.action_ros_ci_step.outputs.ros-workspace-directory-name }}/log
+
+  grade-bags:
+    runs-on: ubuntu-22.04
+    needs: colcon-build
+    if: hashFiles('submissions/*.bag/metadata.yaml') != ''
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup ROS 2 Humble
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: humble
+
+      - name: Grade submitted bags
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          FAILED=0
+          for BAG in submissions/*_a3_1.bag; do
+            [ -d "$BAG" ] || continue
+            python3 scripts/grade_a3.py --answer-bag "$BAG" --part 1 || FAILED=1
+          done
+          for BAG in submissions/*_a3_2.bag; do
+            [ -d "$BAG" ] || continue
+            python3 scripts/grade_a3.py --answer-bag "$BAG" --part 2 || FAILED=1
+          done
+          exit $FAILED

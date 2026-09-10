@@ -16,7 +16,7 @@
       <Peers>
         <!-- The professor node's Tailscale hostname/IP. Override with the
              CYCLONEDDS_PEERS env var or edit this list. -->
-        <Peer address="${A3_PROFESSOR_HOST:-professor}"/>
+        <Peer address="${A3_NEIL_HOST:-neil}"/>
       </Peers>
     </Discovery>
     <Internal>
