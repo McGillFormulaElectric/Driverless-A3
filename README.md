@@ -86,7 +86,7 @@ TF theory refs:
 
 **Goal:** subscribe to `/neil/sensor_cones`, transform every pose into `base_link` using the static camera mount, and publish the result on `/${GITHUB_USER}/cones_base_link` (`geometry_msgs/PoseArray`, `frame_id = "base_link"`).
 
-Template: `ros2_ws/src/a3_solution/a3_solution/static_tf_node.py`. There's a `TODO` block inside `_on_cones`. Use `tf2_geometry_msgs.do_transform_pose(pose, tf)` — the `tf` is already looked up for you.
+Template: `ros2_ws/src/a3_new_member/a3_new_member/static_tf_node.py`. There's a `TODO` block inside `_on_cones`. Use `tf2_geometry_msgs.do_transform_pose(pose, tf)` — the `tf` is already looked up for you.
 
 Because this transform is static, the expected result is trivially each camera-frame cone shifted by `(0.5, 0.0, 0.2)`. That is exactly what the grader checks (mean per-cone error <= **0.05 m** over the last 50 messages).
 
@@ -96,7 +96,7 @@ Run it:
 ```bash
 colcon build --symlink-install
 source install/setup.bash
-ros2 launch a3_solution static.launch.py github_user:=$GITHUB_USER
+ros2 launch a3_new_member static.launch.py github_user:=$GITHUB_USER
 ```
 
 Watch the feedback:
@@ -117,7 +117,7 @@ Congrats <your-github-user>, the answer is correct
 
 Same input, harder target frame: publish the cones in `map` on `/${GITHUB_USER}/cones_map` (`geometry_msgs/PoseArray`, `frame_id = "map"`).
 
-Template: `ros2_ws/src/a3_solution/a3_solution/dynamic_tf_node.py`. The code you write is *almost identical* to A3.1 — just ask tf2 for `map <- camera` at the message stamp. tf2 walks the tree `map <- base_link <- camera` for you.
+Template: `ros2_ws/src/a3_new_member/a3_new_member/dynamic_tf_node.py`. The code you write is *almost identical* to A3.1 — just ask tf2 for `map <- camera` at the message stamp. tf2 walks the tree `map <- base_link <- camera` for you.
 
 The magic here: the car is **driving in a circle**, so the exact same cone in the camera frame is at a different point in `map` every single message. Plot the published PoseArray in Foxglove with the `map` frame fixed and every cone traces its own circle. That is your visual proof the dynamic TF chain works.
 
@@ -127,7 +127,7 @@ Run it:
 ```bash
 colcon build --symlink-install
 source install/setup.bash
-ros2 launch a3_solution dynamic.launch.py github_user:=$GITHUB_USER
+ros2 launch a3_new_member dynamic.launch.py github_user:=$GITHUB_USER
 ```
 
 **Deliverable for A3.2:** screenshot of `/neil/feedback`, plus a Foxglove screenshot showing the cones tracing circles in `map`, committed as `submissions/a3_2_feedback.png` and `submissions/a3_2_map.png`, plus your finished `dynamic_tf_node.py`.
@@ -185,7 +185,7 @@ Driverless-A3/
 ├── docker/                    # Dockerfile, compose, CycloneDDS config, entrypoint
 ├── ros2_ws/
 │   └── src/
-│       ├── a3_solution/        # your template — this is where you write code
+│       ├── a3_new_member/        # your template — this is where you write code
 │       └── a3_neil/      # for reference; not run by students
 └── README.md
 ```

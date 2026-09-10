@@ -1,7 +1,7 @@
 from setuptools import setup
 from glob import glob
 
-package_name = 'a3_solution'
+package_name = 'a3_new_member'
 
 setup(
     name=package_name,
@@ -17,13 +17,13 @@ setup(
     zip_safe=True,
     maintainer='Neil George',
     maintainer_email='neilgeorge03@gmail.com',
-    description='MFE A3 student solution: static + dynamic TF chain.',
+    description='MFE A3 student new_member: static + dynamic TF chain.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'static_tf_node = a3_solution.static_tf_node:main',
-            'dynamic_tf_node = a3_solution.dynamic_tf_node:main',
+            'static_tf_node = a3_new_member.static_tf_node:main',
+            'dynamic_tf_node = a3_new_member.dynamic_tf_node:main',
         ],
     },
 )

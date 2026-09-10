@@ -1,19 +1,22 @@
-"""A3.1 — transform cones from the `camera` frame into `base_link`.
+"""A3.2 — transform cones from `camera` straight into `map`, through the moving
+`base_link` frame.
 
-You are given `/neil/sensor_cones` (geometry_msgs/PoseArray) with
-`header.frame_id == "camera"`. Neil is broadcasting a static transform
-`base_link -> camera` at (0.5, 0.0, 0.2). Your job:
+Neil is broadcasting:
+  * static  base_link -> camera   (fixed sensor mount)
+  * dynamic map      -> base_link (the car driving a skidpad circle at 50 Hz)
 
-  1. Subscribe to `/neil/sensor_cones` (topic is a ROS param — override
-     it if you're playing back a bag on a different name).
-  2. For each pose, look up `base_link <- camera` and transform the pose.
-  3. Publish the transformed PoseArray on `<namespace>/cones_base_link` with
-     `header.frame_id = "base_link"` and the ORIGINAL header stamp copied
-     across (the grader time-matches on it).
+tf2 will chain those for you: ask for `map <- camera` and the buffer walks the
+tree. Because the car is moving, the SAME cone in the camera frame produces a
+different point in `map` every message. Plot the published PoseArray in
+Foxglove with the `map` frame fixed and you should see each cone tracing a
+circle — that is the visual proof your dynamic TF chain works.
+
+Publish on `<namespace>/cones_map` with `header.frame_id = "map"` and copy the
+original stamp across (the grader time-matches on it).
 
 Run with your GitHub username as the ROS namespace:
 
-    ros2 launch a3_solution static.launch.py github_user:=<your-handle>
+    ros2 launch a3_new_member dynamic.launch.py github_user:=<your-handle>
 """
 try:
     import rclpy
@@ -39,42 +42,38 @@ if _ROS_OK:
         depth=10,
     )
 
-TARGET_FRAME = 'base_link'
+TARGET_FRAME = 'map'
 
 
-class StaticTfNode(Node):
+class DynamicTfNode(Node):
     def __init__(self):
-        super().__init__('static_tf_node')
+        super().__init__('dynamic_tf_node')
 
-        # Parameters (see a3_solution/config/params.yaml).
+        # Parameters (see a3_new_member/config/params.yaml).
         self.declare_parameter('tf_lookup_timeout_s', 0.1)
         self.declare_parameter('input_topic', '/neil/sensor_cones')
         self.timeout_s = float(self.get_parameter('tf_lookup_timeout_s').value)
         input_topic = str(self.get_parameter('input_topic').value)
 
-        # tf2 buffer + listener. The listener spins in the background and fills
-        # the buffer with every TransformStamped published on /tf and /tf_static.
         self._tf_buffer = Buffer()
         self._tf_listener = TransformListener(self._tf_buffer, self)
 
         self.sub = self.create_subscription(
             PoseArray, input_topic, self._on_cones, RELIABLE_QOS
         )
-        self.pub = self.create_publisher(PoseArray, 'cones_base_link', RELIABLE_QOS)
+        self.pub = self.create_publisher(PoseArray, 'cones_map', RELIABLE_QOS)
 
         ns = self.get_namespace()
         self.get_logger().info(
             f'Subscribed to {input_topic}, republishing in {TARGET_FRAME} '
-            f'on {ns}/cones_base_link'
+            f'on {ns}/cones_map'
         )
 
     def _on_cones(self, msg) -> None:
         source_frame = msg.header.frame_id  # expect 'camera'
         stamp = Time.from_msg(msg.header.stamp)
 
-        # Look up base_link <- camera at the message stamp. This is a static
-        # transform, but using the real stamp is the correct pattern for the
-        # real driverless stack.
+        # tf2 will chain map <- base_link <- camera automatically.
         try:
             tf = self._tf_buffer.lookup_transform(
                 TARGET_FRAME, source_frame, stamp, timeout=Duration(seconds=self.timeout_s)
@@ -92,7 +91,8 @@ class StaticTfNode(Node):
         # and append it to out.poses.
         #
         # Hint: tf2_geometry_msgs.do_transform_pose(pose, tf) returns the
-        # transformed Pose. `tf` is the TransformStamped you just looked up.
+        # transformed Pose. The same call works for chained transforms —
+        # tf2 has already composed `map <- camera` for you.
         # ------------------------------------------------------------------
         for pose in msg.poses:
             # Replace the next line: do the actual transform.
@@ -106,7 +106,7 @@ def main():
     if not _ROS_OK:
         raise SystemExit('Run inside a ROS 2 Humble environment (rclpy not importable).')
     rclpy.init()
-    node = StaticTfNode()
+    node = DynamicTfNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
